@@ -13,6 +13,7 @@ import com.hackathon.ai.repository.UserRepository;
 import com.hackathon.ai.requestdto.HealthDataRequest;
 import com.hackathon.ai.responsedto.HealthDataResponse;
 import com.hackathon.ai.service.HealthDataService;
+import com.hackathon.ai.service.NotificationService;
 import com.hackathon.ai.util.ResponseStructure;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +26,7 @@ public class HealthDataServiceImpl implements HealthDataService {
 
 	private HealthDataRepository healthDataRepo;
 	private UserRepository userRepo;
+	private NotificationService notiService;
 
 	private HealthData mapToHealthData(HealthDataRequest healthDataRequest, User user) {
 		return HealthData.builder().date(healthDataRequest.getDate()).diet(healthDataRequest.getDiet())
@@ -53,9 +55,12 @@ public class HealthDataServiceImpl implements HealthDataService {
 			
 			healthData = healthDataRepo.save(healthData);
 			
+			notiService.createNotification("Health Data for the day created", userName);
+			
 			structure.setStatus(HttpStatus.CREATED.value());
 			structure.setMessage("Health Data for the Day Created");
 			structure.setData(mapToHealthDataResponse(healthData));
+			
 			
 			return new ResponseEntity<ResponseStructure<HealthDataResponse>>(structure, HttpStatus.CREATED);
 			
@@ -96,6 +101,8 @@ public class HealthDataServiceImpl implements HealthDataService {
             existingHealthData.setSleepHours(healthDataRequest.getSleepHours());
 
             HealthData updatedHealthData = healthDataRepo.save(existingHealthData);
+            
+            notiService.createNotification("Health Data has been updated", userName);
 
             structure.setStatus(HttpStatus.OK.value());
             structure.setMessage("Health Data updated successfully");
@@ -117,19 +124,19 @@ public class HealthDataServiceImpl implements HealthDataService {
 	    return userRepo.findByUserName(userName).map(user -> {
 	        HealthData healthData = healthDataRepo.findById(healthId)
 	                .orElseThrow(() -> new RuntimeException("Health data not found"));
-
 	     
 	        if (!healthData.getUser().equals(user)) {
-	          
 	            throw new RuntimeException("Unauthorized access");
 	        }
 
 	   
 	        healthDataRepo.deleteById(healthId);
+	        
+	        notiService.createNotification("Health Data has been Deleted", userName);
 
 	  
 	        structure.setStatus(HttpStatus.OK.value());
-            structure.setMessage("Health Data updated successfully");
+            structure.setMessage("Health Data deleted successfully");
             structure.setData(mapToHealthDataResponse(healthData));
 
 	        return new ResponseEntity<>(structure, HttpStatus.OK);

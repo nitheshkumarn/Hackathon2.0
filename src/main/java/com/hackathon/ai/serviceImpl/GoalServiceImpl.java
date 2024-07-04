@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 import com.hackathon.ai.entity.Goal;
 import com.hackathon.ai.entity.User;
 import com.hackathon.ai.repository.GoalRepository;
+import com.hackathon.ai.repository.NotificationRepository;
 import com.hackathon.ai.repository.UserRepository;
 import com.hackathon.ai.requestdto.GoalRequest;
 import com.hackathon.ai.responsedto.GoalResponse;
 import com.hackathon.ai.service.GoalService;
+import com.hackathon.ai.service.NotificationService;
 import com.hackathon.ai.util.ResponseStructure;
 
 import lombok.AllArgsConstructor;
@@ -25,6 +27,7 @@ public class GoalServiceImpl implements GoalService {
 
 	private UserRepository userRepo;
 	private GoalRepository goalRepo;
+	private NotificationService notiService;
 
 	private Goal mapToGoal(GoalRequest goalRequest, User user) {
 		return Goal.builder().description(goalRequest.getDescription()).targetDate(goalRequest.getTargetDate())
@@ -52,9 +55,11 @@ public class GoalServiceImpl implements GoalService {
 			goal.setUser(user);
 
 			goal = goalRepo.save(goal);
+			
+			notiService.createNotification("Goal Added make sure you achieve it", userName);
 
 			structure.setStatus(HttpStatus.CREATED.value());
-			structure.setMessage("Health Data for the Day Created");
+			structure.setMessage("Goal Has been set");
 			structure.setData(mapToGoalResponse(goal));
 
 			return new ResponseEntity<ResponseStructure<GoalResponse>>(structure, HttpStatus.CREATED);
@@ -80,6 +85,8 @@ public class GoalServiceImpl implements GoalService {
 
 	        goal = goalRepo.save(goal);
 
+	        notiService.createNotification("Goal updated ", userName);
+	        
 	        structure.setStatus(HttpStatus.OK.value());
 	        structure.setMessage("Goal updated successfully");
 	        structure.setData(mapToGoalResponse(goal));
@@ -102,6 +109,8 @@ public class GoalServiceImpl implements GoalService {
 	        }
 
 	        goalRepo.deleteById(id);
+	        
+	        notiService.createNotification("Goal deleted ", userName);
 
 	        structure.setStatus(HttpStatus.OK.value());
 	        structure.setMessage("Goal deleted successfully");
