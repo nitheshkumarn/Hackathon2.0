@@ -1,4 +1,4 @@
-package com.hackathon.ai.requestdto;
+ 	package com.hackathon.ai.requestdto;
 
 public class NotificationRequest {
 
