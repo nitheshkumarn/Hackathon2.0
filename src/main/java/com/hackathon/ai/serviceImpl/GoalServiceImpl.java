@@ -1,5 +1,8 @@
 package com.hackathon.ai.serviceImpl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,6 +20,7 @@ import com.hackathon.ai.service.GoalService;
 import com.hackathon.ai.service.NotificationService;
 import com.hackathon.ai.util.ResponseStructure;
 
+
 import lombok.AllArgsConstructor;
 
 @Service
@@ -24,6 +28,7 @@ import lombok.AllArgsConstructor;
 public class GoalServiceImpl implements GoalService {
 
 	ResponseStructure<GoalResponse> structure;
+	private ResponseStructure<List<GoalResponse>> listStructure;
 
 	private UserRepository userRepo;
 	private GoalRepository goalRepo;
@@ -38,6 +43,22 @@ public class GoalServiceImpl implements GoalService {
 	private GoalResponse mapToGoalResponse(Goal goal) {
 		return GoalResponse.builder().goalId(goal.getGoalId()).description(goal.getDescription())
 				.targetDate(goal.getTargetDate()).achieved(false).userId(goal.getUser().getUserId()).build();
+	}
+	
+	private List<GoalResponse> mapTOListOfGoalResponse(List<Goal> listOfGoals) {
+		List<GoalResponse> listOfUserResponse = new ArrayList<>();
+
+		listOfGoals.forEach(goal -> {
+			GoalResponse gr = new GoalResponse();
+			gr.setGoalId(goal.getGoalId());
+			gr.setDescription(goal.getDescription());
+			gr.setTargetDate(goal.getTargetDate());
+			gr.setAchieved(false);
+			gr.setUserId(goal.getUser().getUserId());
+			listOfUserResponse.add(gr);
+		});
+
+		return listOfUserResponse;
 	}
 
 	@Override
@@ -120,6 +141,31 @@ public class GoalServiceImpl implements GoalService {
 
 	    }).orElseThrow(() -> new RuntimeException("Goal not Found"));
 	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<List<GoalResponse>>> getGoals() {
+		 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	        String userName = authentication.getName();
+	        User user = userRepo.findByUserName(userName).orElseThrow(() -> new RuntimeException("User not Found"));
+	        
+	        List<Goal> goals = goalRepo.findAllGoalsByUser(user);
+		
+	        if (goals.isEmpty()) {
+				listStructure.setStatus(HttpStatus.NOT_FOUND.value());
+				listStructure.setMessage("No Goals found");
+				listStructure.setData(mapTOListOfGoalResponse(goals));
+
+				return new ResponseEntity<ResponseStructure<List<GoalResponse>>>(listStructure, HttpStatus.NOT_FOUND);
+			} else {
+				listStructure.setStatus(HttpStatus.FOUND.value());
+				listStructure.setMessage("list of Goals found");
+				listStructure.setData(mapTOListOfGoalResponse(goals));
+
+				return new ResponseEntity<ResponseStructure<List<GoalResponse>>>(listStructure, HttpStatus.FOUND);
+			}
+	}
+	
+	
 }
 
 

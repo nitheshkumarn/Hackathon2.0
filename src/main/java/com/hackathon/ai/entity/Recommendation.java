@@ -18,8 +18,7 @@ import lombok.Setter;
 @Builder
 @Setter
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+
 public class Recommendation {
 
 	@Id

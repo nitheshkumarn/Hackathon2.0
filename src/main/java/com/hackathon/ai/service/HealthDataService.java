@@ -15,4 +15,6 @@ public interface HealthDataService {
 
 	ResponseEntity<ResponseStructure<HealthDataResponse>> deleteHealthData(Integer healthId);
 
+	ResponseEntity<ResponseStructure<HealthDataResponse>> getHealthData(HealthDataRequest healthDataRequest);
+
 }

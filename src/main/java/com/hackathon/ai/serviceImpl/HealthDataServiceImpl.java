@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.hackathon.ai.entity.HealthData;
 import com.hackathon.ai.entity.User;
+import com.hackathon.ai.exception.HealthDataAlreadyExists;
+import com.hackathon.ai.exception.UserNotFoundException;
 import com.hackathon.ai.repository.HealthDataRepository;
 import com.hackathon.ai.repository.UserRepository;
 import com.hackathon.ai.requestdto.HealthDataRequest;
@@ -45,6 +47,14 @@ public class HealthDataServiceImpl implements HealthDataService {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		String userName = authentication.getName();
 		
+		boolean rs = healthDataRepo.existsByDate(healthDataRequest.getDate());
+		
+		if(rs == true) {
+			
+			throw new HealthDataAlreadyExists("Health Data for the day already created");
+			
+		}
+		else {
 		return userRepo.findByUserName(userName).map(user -> {
 			HealthData healthData = mapToHealthData(healthDataRequest,user);
 			healthData = healthDataRepo.save(healthData);
@@ -64,7 +74,7 @@ public class HealthDataServiceImpl implements HealthDataService {
 			
 			return new ResponseEntity<ResponseStructure<HealthDataResponse>>(structure, HttpStatus.CREATED);
 			
-		}).orElseThrow(() -> new RuntimeException("User not Found"));
+		}).orElseThrow(() -> new UserNotFoundException("User not Found"));
 
 		/*User user = userRepo.findByUserName(userName).orElseThrow(() -> new RuntimeException(" user not found"));
 		HealthData healthData = mapToHealthData(healthDataRequest,user);
@@ -79,7 +89,7 @@ public class HealthDataServiceImpl implements HealthDataService {
 
 		return new ResponseEntity<ResponseStructure<HealthDataResponse>>(structure, HttpStatus.CREATED);*/
 		
-		
+		}
 	}
 	
 	@Override
@@ -141,6 +151,29 @@ public class HealthDataServiceImpl implements HealthDataService {
 
 	        return new ResponseEntity<>(structure, HttpStatus.OK);
 	    }).orElseThrow(() -> new RuntimeException("User not found"));
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<HealthDataResponse>> getHealthData(HealthDataRequest healthDataRequest) {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    String userName = authentication.getName();
+	    
+	    return userRepo.findByUserName(userName).map(user -> {
+	        HealthData healthData = healthDataRepo.findByDate(healthDataRequest.getDate());
+	           
+	     
+	        if (!healthData.getUser().equals(user)) {
+	            throw new RuntimeException("Unauthorized access");
+	        }
+	        
+	        structure.setStatus(HttpStatus.OK.value());
+            structure.setMessage("Health Data retrieved successfully");
+            structure.setData(mapToHealthDataResponse(healthData));
+
+	        return new ResponseEntity<>(structure, HttpStatus.OK);
+	    }).orElseThrow(() -> new RuntimeException("User not found"));
+
+		
 	}
 
 	}

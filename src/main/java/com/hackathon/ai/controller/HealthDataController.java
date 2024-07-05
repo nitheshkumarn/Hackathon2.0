@@ -1,10 +1,9 @@
 package com.hackathon.ai.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hackathon.ai.requestdto.HealthDataRequest;
-import com.hackathon.ai.requestdto.UserRequest;
 import com.hackathon.ai.responsedto.HealthDataResponse;
-import com.hackathon.ai.responsedto.UserResponse;
 import com.hackathon.ai.service.HealthDataService;
 import com.hackathon.ai.util.ResponseStructure;
 
@@ -44,6 +41,12 @@ public class HealthDataController {
     @DeleteMapping("/delete/{healthId}")
     public ResponseEntity<ResponseStructure<HealthDataResponse>> deleteHealthData(@PathVariable Integer healthId) {
         return hs.deleteHealthData(healthId);
+    }
+    
+    @GetMapping("/get")
+    public ResponseEntity<ResponseStructure<HealthDataResponse>> getHealthData(@RequestBody HealthDataRequest healthDataRequest){
+    	return hs.getHealthData(healthDataRequest);
+    	
     }
 
 }

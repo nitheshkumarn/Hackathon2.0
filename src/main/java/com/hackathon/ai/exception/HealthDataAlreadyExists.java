@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class UserAlreadyRegisteredException extends RuntimeException {
+public class HealthDataAlreadyExists extends RuntimeException {
 	
 	private String message;
 

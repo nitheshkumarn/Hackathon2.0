@@ -21,6 +21,7 @@ import com.hackathon.ai.cache.CacheStore;
 import com.hackathon.ai.entity.AccessToken;
 import com.hackathon.ai.entity.RefreshToken;
 import com.hackathon.ai.entity.User;
+import com.hackathon.ai.exception.UserAlreadyLoggedException;
 import com.hackathon.ai.exception.UserAlreadyRegisteredException;
 import com.hackathon.ai.repository.AccessTokenRepository;
 import com.hackathon.ai.repository.RefreshTokenRepository;
@@ -193,7 +194,7 @@ public class UserServiceImpl implements UserService {
 					authRequest.getPassword());
 			Authentication authentication = authenticationManager.authenticate(token);
 			if (!authentication.isAuthenticated()) {
-				throw new UsernameNotFoundException("Failed to authenticate the user");
+				throw new UserAlreadyLoggedException("Failed to authenticate the use");
 			}
 
 			return userRepo.findByUserName(username).map(user -> {
@@ -203,7 +204,7 @@ public class UserServiceImpl implements UserService {
 
 			}).orElseThrow(() -> new UsernameNotFoundException("user name not found"));
 		} else
-			throw new RuntimeException("User already Logged In");
+			throw new UserAlreadyLoggedException("User already Logged In");
 
 	}
 

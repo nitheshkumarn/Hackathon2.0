@@ -1,5 +1,7 @@
 package com.hackathon.ai.service;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 
 import com.hackathon.ai.requestdto.GoalRequest;
@@ -13,6 +15,8 @@ public interface GoalService {
 	ResponseEntity<ResponseStructure<GoalResponse>> updateGoal(Integer id, GoalRequest goalRequest);
 
 	ResponseEntity<ResponseStructure<GoalResponse>> deleteGoal(Integer id);
+
+	ResponseEntity<ResponseStructure<List<GoalResponse>>> getGoals();
 
 }
 
